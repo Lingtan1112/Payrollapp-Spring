@@ -8,9 +8,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableScheduling
 @EnableSwagger2
-@SpringBootApplication
+@SpringBootApplication()
+
 public class PayrollApiApplication {
-	
+
 	public static void main(String[] args) {
 		SpringApplication.run(PayrollApiApplication.class, args);
 	}

@@ -3,6 +3,8 @@ package in.lingtan.model;
 
 
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -23,6 +25,15 @@ import lombok.ToString;
 @Table(value="payroll_data")
 @JsonInclude(value = Include.NON_NULL)
 public class PayRoll {
+
+	@Column("role_id")
+	private int roleId;
+
+	@Column("id")
+	private int id;
+
+	@Column("created_date")
+	private LocalDate createdDate;
 
 	@Column("ctc")
 	private int ctc;
@@ -48,7 +59,7 @@ public class PayRoll {
 	@Column("travel_allowance")
 	private int travelAllowance ;
 
-	@Column("hra_allowance")
+	@Column("hra")
 	private int hraAllowance ;
 
 	@Column("food_allowance")

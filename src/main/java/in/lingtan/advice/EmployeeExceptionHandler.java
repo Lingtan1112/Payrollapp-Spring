@@ -1,5 +1,6 @@
 package in.lingtan.advice;
 
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import javax.validation.UnexpectedTypeException;
@@ -9,13 +10,14 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.relational.core.conversion.DbActionExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+
 import in.lingtan.exceptions.CannotGetCredentialException;
 import in.lingtan.exceptions.CannotRegisterEmployeeException;
 import in.lingtan.exceptions.EmployeeAlreadyActiveException;
@@ -41,7 +43,6 @@ import in.lingtan.model.Message;
 @ControllerAdvice
 public class EmployeeExceptionHandler {
 
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<Message> methodArgumentNotValidException(MethodArgumentNotValidException e) {
@@ -53,7 +54,8 @@ public class EmployeeExceptionHandler {
 		}
 		return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 	}
-	
+
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Message> mapException(Exception e) {
 		Message message = new Message(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -66,16 +68,17 @@ public class EmployeeExceptionHandler {
 		Message message = new Message(e.getMessage(), HttpStatus.BAD_REQUEST);
 		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
 	}
-	
+
 	@ExceptionHandler(InvalidEmployeeIdException.class)
 	public ResponseEntity<Message> mapUnexpectedTypeException(InvalidEmployeeIdException e) {
 		Message message = new Message(e.getMessage(), HttpStatus.BAD_REQUEST);
 		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
 	}
-	
+
 	@ExceptionHandler(ExistingEmployeeException.class)
 	public ResponseEntity<Message> mapExistingEmployeeException(ExistingEmployeeException e) {
-		Message message = new Message(e.getMessage(), HttpStatus.BAD_REQUEST);
+		Message message = e.getParameter();
+		message.setErrorCode(HttpStatus.BAD_REQUEST);
 		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
 	}
 
@@ -134,7 +137,6 @@ public class EmployeeExceptionHandler {
 		Message message = new Message(e.getMessage(), HttpStatus.BAD_REQUEST);
 
 		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-
 	}
 
 	@ExceptionHandler(EmployeeNotFoundException.class)
@@ -173,8 +175,8 @@ public class EmployeeExceptionHandler {
 	public ResponseEntity<Message> mapInValidEmailIDException(InValidEmailIDException e) {
 		Message message = new Message(e.getMessage(), HttpStatus.BAD_REQUEST);
 		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-
 	}
+
 
 	@ExceptionHandler(InvalidEmployeeIdFormatException.class)
 	public ResponseEntity<Message> mapInvalidEmployeeIdFormatException(InvalidEmployeeIdFormatException e) {
@@ -188,7 +190,6 @@ public class EmployeeExceptionHandler {
 			PasswordDoNotMatchWithOldPasswordException e) {
 		Message message = new Message(e.getMessage(), HttpStatus.BAD_REQUEST);
 		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
-
 	}
 
 	@ExceptionHandler(CannotGetCredentialException.class)
@@ -197,7 +198,7 @@ public class EmployeeExceptionHandler {
 		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
 
 	}
-	
+
 
 	@ExceptionHandler(InvalidEmployeeIdLengthException.class)
 	public ResponseEntity<Message> mapInvalidEmployeeIdLengthException(InvalidEmployeeIdLengthException e) {
@@ -214,27 +215,42 @@ public class EmployeeExceptionHandler {
 	}
 	@ExceptionHandler(DbActionExecutionException.class)
 	public ResponseEntity<Message> mapDuplicateKeyException(DbActionExecutionException e) {
-	
+
 		Message message = new Message(e.getMessage(), HttpStatus.NOT_ACCEPTABLE);
-		
+
 		return new ResponseEntity<>(message, HttpStatus.NOT_ACCEPTABLE);
 	}
-	
+
 	@ExceptionHandler(DuplicateKeyException.class)
 	public ResponseEntity<Message> mapDuplicateKeyException(DuplicateKeyException e) {
-		
+
 		Message message = new Message(e.getMessage(), HttpStatus.NOT_ACCEPTABLE);
-		
+
 		return new ResponseEntity<>(message, HttpStatus.NOT_ACCEPTABLE);
 	}
-	
+
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<Message> mapDataIntegrityViolationException(DataIntegrityViolationException e) {
-		
+
 		Message message = new Message(e.getMessage(), HttpStatus.NOT_ACCEPTABLE);
-	
+
 		return new ResponseEntity<>(message, HttpStatus.NOT_ACCEPTABLE);
 	}
-	
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<Message> mapInvalidFormatException(HttpMessageNotReadableException e) {
+		String errorMessage = null;
+		try {
+			if (e.getRootCause().getClass().equals(DateTimeParseException.class)) {
+				System.out.println("Success");
+				errorMessage = "Invalid Date or Time format";
+			}
+		} catch (Exception ex) {
+
+		}
+		Message message = new Message(errorMessage, HttpStatus.BAD_REQUEST);
+
+		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+	}
 
 }

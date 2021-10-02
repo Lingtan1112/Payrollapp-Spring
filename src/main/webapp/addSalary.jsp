@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<%@page import="in.lingtan.dto.PayRollDTO"%>
-<%@page import="java.util.List"%>
-<%@page import="in.lingtan.service.PayRollService"%>
-<%@page import="java.time.LocalDate"%>
-<%@page import="java.util.HashMap"%>
-
 <html lang="en">
 <head>
 <meta charset="ISO-8859-1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 <title>Salary Modification</title>
 </head>
 
@@ -47,7 +45,6 @@ left:      300px;
 height:    80px;
 }
 
-
 </style>
 <body onload="dropDownDisplay()">
 
@@ -75,12 +72,7 @@ height:    80px;
 		<div class="col">
 			<label>Role </label>
 			<select name = "Role" id = "Role" onchange="displayRoleBasedPay()" class="form-control form-control-sm" style="width:180px;"  >
-				<option value="Technical Consultant" >Technical Consultant </option>
-				<option value="HR" >HR </option>
-				<option value="System Administration" >System Administration</option>
-				<option value="PL SQL" >PL SQL </option>
-				<option value="Software Developer" >Software Developer </option>
-				<option value="UI-Designer" >Ui-Designer</option>
+				<option value=""> select </option>
 			</select>
 		</div>
 		</div>
@@ -157,19 +149,50 @@ height:    80px;
 
 
 <script type="text/javascript" >
+
+
+
+$( document ).ready(function() {
+	let url = "payroll/v1/GetRoles";
+    axios.get(url).then(res=>{
+    	console.log("All data",res.data);
+    	for(let role of res.data){
+			 $('#Role').append('<option value="' + role.id + '">' + role.role + '</option>');
+    	}
+    })
+});
+
 /**
  * This Method uses json strings to assign values to the textboxes which are recieved from the servlet.
  */
 function getSalaryDataForRole(roleToDisplay){
-	
+	event.preventDefault();
 	console.log("Fetching PayRoll Data");
-	let url = "AddPayServlet?roleToDisplay="+roleToDisplay;
-	fetch(url).then(res=> res.json()).then(res=>{
+	var selectedRole = $("#Role").find("option:selected").val();
+	console.log("Selected Role");
+	console.log(selectedRole);
+	let url = "payroll/v1/GetPayDataToDisplay?id="+selectedRole;
+	axios.get(url).then(res=> {
 		console.log(res);
 		let payRollData = res;
-		for(let data of payRollData){
-	
-			document.getElementById('Role').value = (data.role);
+		
+		$(container).append('<input type="number" value="'+payRollData.data.basicPay+'">')
+		
+		console.log(payRollData.data.basicPay);
+		
+		$("#basicPay").val(payRollData.data.basicPay);
+		$("#hra").val(payRollData.data.hraAllowance);
+		$("#pf").val(payRollData.data.pf);
+		$("#pfPercentage").val(payRollData.data.basicPay);
+		$("#foodAllowance").val(payRollData.data.foodAllowance);
+		$("#basicPay").val(payRollData.data.basicPay);
+		$("#basicPay").val(payRollData.data.basicPay);
+		$("#basicPay").val(payRollData.data.basicPay);
+		$("#basicPay").val(payRollData.data.basicPay);
+		$("#basicPay").val(payRollData.data.basicPay);
+		
+			//document.getElementById('basicPay').value = (payRollData.data.basicPay);
+			/*document.getElementById('Role').value = (data.role);
 			document.getElementById('basicPay').value = (data.basicPay);
 			document.getElementById('hra').value = (data.hraAllowance);
 			document.getElementById('pfPercentage').value = (data.pfPercentage);
@@ -178,9 +201,9 @@ function getSalaryDataForRole(roleToDisplay){
 			document.getElementById('medicalAllowance').value = (data.medicalAllowance);
 			document.getElementById('travelAllowance').value = (data.travelAllowance);
 			document.getElementById('estimatedSalary').value = (data.salary);
-			document.getElementById('ctc').value = (data.ctc);
+			document.getElementById('ctc').value = (data.ctc);*/
 			
-		}
+		
 	})
 }
 /**
@@ -196,14 +219,13 @@ function activate(id){
  * This method loads when the jsp file is executed to run which initializes the first time values into the textboxes.
  */
 function dropDownDisplay(){
+	
 	let roleOnSubmit = localStorage.getItem("ROLE_ON_SUBMIT");
 	if(roleOnSubmit==null){
 		getSalaryDataForRole("Technical Consultant");
-	}
-	else{
+	}else{
 		getSalaryDataForRole(roleOnSubmit);
 	}
-
 }
 
 /**
@@ -220,6 +242,20 @@ function saveRole(){
 	let roleOnSubmit = document.getElementById('Role').value;
 	localStorage.setItem("ROLE_ON_SUBMIT",roleOnSubmit);
 }
+
+
+//To find the selected value
+function displayRoles(){
+	 var selectedText = $("#Role").find("option:selected").val();
+	 console.log(selectedText);
+}
+  
+  
+var container = $(document.createElement('div')).css({
+    padding: '5px', margin: '20px', width: '170px', border: '1px dashed',
+    borderTopColor: '#999', borderBottomColor: '#999',
+    borderLeftColor: '#999', borderRightColor: '#999'
+});
 </script>
 
 </body>

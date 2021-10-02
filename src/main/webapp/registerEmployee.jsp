@@ -4,10 +4,9 @@
 
 <html lang="en">
 <head>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<link rel="stylesheet" href="assets/css/adminPortal.css">
 
 <meta charset="ISO-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Register Employee</title>
 <style>
 
@@ -21,6 +20,11 @@ width:150px;
 </style>
 
 </head>
+<link rel="stylesheet" href="assets/css/adminPortal.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>	
 <body>
 <jsp:include page="header.jsp"></jsp:include>
 <div class="pageTitle" class="d-flex justify-content-center">
@@ -41,16 +45,15 @@ width:150px;
 	
 <form action="" method="post" onsubmit="registerEmployee()" id="registerForm" >
 	
-	<label id="successLabel"></label>
 	<label id="pageError"></label>
 	
 	<div class="row">
 	  <div class="col">
-			<label>First Name  </label><input type="text" name="firstName" class="form-control form-control-sm" id="firstName" pattern="[a-zA-Z]+" placeholder="First Name" required autofocus>
+			<label>First Name  </label><input type="text" value="Lingtan" name="firstName" class="form-control form-control-sm" id="firstName" placeholder="First Name"  autofocus>
 			<label class="clear" id="firstNameError"></label>
 	  </div>
 	  <div class="col">
-			<label>Last Name  </label><input type="text" name="lastName" id="lastName" class="form-control form-control-sm" placeholder="Employee's Father Name" required >
+			<label>Last Name  </label><input type="text" value="Navis Anthoni samy" name="lastName" id="lastName" class="form-control form-control-sm" placeholder="Employee's Father Name"  >
 	  		<label id="lastNameError"></label>
 	  </div>
 	</div>
@@ -67,14 +70,14 @@ width:150px;
 			</select>
 		</div>
 		<div class="col">
-			<label>Date of Birth</label><input type="date" min='1985-01-01' max='2022-01-01' class="form-control form-control-sm" name="dob" id="dob"  placeholder="YYYY-MM-DD" required>
+			<label>Date of Birth</label><input type="date" min='1985-01-01' value="<%=LocalDate.now().minusDays(100)%>" max='2022-01-01' class="form-control form-control-sm" name="dob" id="dob"  placeholder="YYYY-MM-DD" required>
 			<label id="dobError"></label>
 		</div>
 	</div>
 	
 	<div class="row">
 		<div class=" col">
-			<label>Mobile Number</label><input type="number" name="mobileNumber" min="0000000000" max="9999999999" id="mobileNumber" class="form-control form-control-sm" placeholder="Mobile Number" required>
+			<label>Mobile Number</label><input type="number" value="9600923846" name="mobileNumber" min="0000000000"  max="9999999999" id="mobileNumber" class="form-control form-control-sm" placeholder="Mobile Number" required>
 			<label id="mobileNumberError"></label>
 		</div>
 		<div class="col">
@@ -108,8 +111,12 @@ width:150px;
 	
 	</div>
 	
-	
+</form>
+</main>
+
+
 <script>
+
 function registerEmployee(){
 	event.preventDefault();
 	document.querySelector("#firstNameError").innerHTML = "";
@@ -117,7 +124,6 @@ function registerEmployee(){
 	document.querySelector("#dobError").innerHTML = "";
 	document.querySelector("#mobileNumberError").innerHTML = "";
 	document.querySelector("#joinDateError").innerHTML = "";
-	document.querySelector("#successLabel").innerHTML = "";
 	document.querySelector("#pageError").innerHTML = "";
 	
 	let myForm = event.target;
@@ -129,18 +135,23 @@ function registerEmployee(){
 	}
 	let url = "employee/v1/RegisterEmployee";
 	axios.post(url, obj).then(res=>{ 
-		
-		console.log("Recieved Data"); 
-		console.log("Data--"+JSON.stringify(res.data));
-		document.getElementById("successLabel").innerHTML="<font style='font-size:12px' color='darkgreen'>Successfully registered-"+res.data.name+"</font>";
-		
+		console.log(res);
+		if(res){
+			let notyf = new Notyf({
+				ripple:false,
+				duration:3000,
+				dismissible:true,
+				position:{x:'right',y:'top'}
+			});
+			notyf.success("Successfully Registered");
+			document.getElementById("registerForm").reset();
+		}		
 	}).catch(err=>{
-		console.log("Error Block");
-		let error = err.response.data.errorMessage;
 		
-		if(error!=null){
-			document.querySelector("#pageError").innerHTML = "<font style='font-size:12px' color='red'>"+(error)+"</font>";
-		}
+		let error = err.response.data.errorMessage;
+		console.log(err.response.data);
+		if(error=="validation error"){
+			
 			for(let error of err.response.data.errorMessages){
 				let name = error.objectName;
 				console.log(error);
@@ -160,16 +171,42 @@ function registerEmployee(){
 				if(name=='joiningDate'){		
 					document.querySelector("#joinDateError").innerHTML = "<font style='font-size:12px' color='red'>"+(error.defaultMessage)+"</font>";
 				}
-				
 			}
+		}else if(error.errorSource="EmployeeIdInactive"){
+			document.querySelector("#pageError").innerHTML = "<font style='font-size:12px' color='red'>"+(err.response.data.employeeId)+" is Inactive - </font><a href='' onclick = 'activateEmployee('"+err.response.data.employeeId+"')' class='btn btn-info'>Activate</a>";
+		}
 	});
 }
+
+function activateEmployee(employeeId){
+	alert("Hello");
+	event.preventDefault();
+	console.log(employeeId);
+	
+	let url = "employee/v1/ActivateEmployee?employeeID="+employeeId;	
+	axios.put(url).then(res=>{
+		if(res){
+			let notyf = new Notyf({
+				ripple:false,
+				duration:3000,
+				dismissible:true,
+				position:{x:'right',y:'top'}
+			});notyf.success("Successfully Activated");
+		}
+		console.log(res);
+	}).catch(err=>{
+		let error = err.response.data;
+		console.log(err.response.data);
+		let notyf = new Notyf({
+			ripple:false,
+			duration:3000,
+			dismissible:true,
+			position:{x:'right',y:'top'}
+		});notyf.error(error.errorMessage);
+	});
+}
+
 </script>
-
-</form>
-
-
-</main>
 
 </body>
 </html>
