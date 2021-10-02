@@ -1,0 +1,15 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{fbf2d2e5-a13d-4550-b2f6-685cccf23258}}
+          heroku_app_name: "payrollapp-lingtan" #Must be unique in Heroku
+          heroku_email: "lingtan1222k@gmail.com"
