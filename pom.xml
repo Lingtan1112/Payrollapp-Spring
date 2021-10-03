@@ -108,10 +108,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-quartz</artifactId>
 		</dependency>
-		<!--<dependency>
+		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-		</dependency>-->
+		</dependency>
 		
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -124,11 +124,6 @@
 			<artifactId>json-path</artifactId>
 			<scope>test</scope>
 		</dependency>
-	  
-		
-
-
-
 	</dependencies>
 
 	<build>
